@@ -1,6 +1,6 @@
 {
   "name": "ntfy-auth-gate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "approve api requests from your phone with ntfy, as a drop-in middleware for node servers",
   "license": "MIT",
   "author": "theabbie",

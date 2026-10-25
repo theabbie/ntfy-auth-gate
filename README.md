@@ -1,5 +1,9 @@
 # ntfy-auth-gate
 
+<p align="center">
+  <img src="docs/approval-notification.png" alt="ntfy notification asking to approve an API request, with Approve and Deny buttons" width="600">
+</p>
+
 Approve API requests from your phone. Drop the gate in front of any route, and each call holds until you tap Approve on an [ntfy](https://ntfy.sh) notification.
 
 The caller sends no key and no password. It just calls the endpoint and waits, the same way a bank asks you to approve a login in its app. Works with Express, plain `node:http`, and anything built on Web `Request` and `Response` (Hono, Bun, Deno, Workers).
@@ -22,11 +26,32 @@ npm install ntfy-auth-gate
 
 Requires Node 18 or newer. No runtime dependencies. Ships ESM and CommonJS with types.
 
-Install the ntfy app on your phone and subscribe to a long random topic:
+## Set up your phone
 
-```sh
-openssl rand -hex 16
-```
+You do this once.
+
+1. **Install the ntfy app.**
+   - Android: [Google Play](https://play.google.com/store/apps/details?id=io.heckel.ntfy) or [F-Droid](https://f-droid.org/packages/io.heckel.ntfy/)
+   - iPhone: [App Store](https://apps.apple.com/us/app/ntfy/id1625396347)
+   - No phone handy: the [web app](https://ntfy.sh/app) works too, but you only get alerts while the tab is open.
+2. **Make a secret topic name.** The topic is the only thing protecting your approvals, so make it long and random. It can be up to 40 characters of letters, digits, dash and underscore.
+   ```sh
+   openssl rand -hex 16
+   ```
+3. **Subscribe to it in the app.** Tap the **+** button, paste the topic name, and tap **Subscribe**. Allow notifications when your phone asks. If you run your own ntfy server, turn on **Use another server** and enter its URL.
+4. **Check that it works.** Run this from any terminal and your phone should buzz:
+   ```sh
+   curl -d "it works" ntfy.sh/YOUR_TOPIC
+   ```
+5. **Give the same topic to the gate.** Keep it in an environment variable, not in your code:
+   ```sh
+   export NTFY_TOPIC=YOUR_TOPIC
+   ```
+   ```js
+   const gate = createGate({ topic: process.env.NTFY_TOPIC });
+   ```
+
+When a guarded route is called, the notification shows up with **Approve** and **Deny** buttons. You can answer straight from the notification without opening the app. If you self-host ntfy and use an iPhone, set `upstream-base-url: https://ntfy.sh` on your server so instant delivery works.
 
 ## Usage
 
