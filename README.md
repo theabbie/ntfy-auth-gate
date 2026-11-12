@@ -114,13 +114,21 @@ curl -s https://api.example.com/token
 
 ## Example: a Vault application
 
-[abbievault.vercel.app](https://abbievault.vercel.app) uses the gate in front of a vault. The routes that return stored secrets are guarded, so opening an entry sends an ntfy notification and the response waits until you tap Approve on your phone. There are no vault passwords to type, and a request that you did not make never gets past the gate.
+[AbbieVault](https://abbievault.vercel.app) is a small Next.js app that keeps API keys in Upstash Redis and uses the gate to release them. Reading a value goes through `gate.approve()`, so the request holds while an ntfy notification asks you to approve it, and the key is only fetched after you tap Approve.
 
 ```js
-app.get("/vault/:id", gate.middleware, (req, res) => {
-  res.json(readSecret(req.params.id));
+// app/api/keys/[name]/route.js
+const decision = await gate.approve({
+  title: "AbbieVault field read approval",
+  message: `Value requested for key: ${key}`,
 });
+if (!decision.approved) {
+  return Response.json({ error: decision.reason }, { status: decision.reason === "timeout" ? 408 : 403 });
+}
+return Response.json({ key, value: await getKeyValue(key) }, { headers: { "cache-control": "no-store" } });
 ```
+
+The gate is created once with a 120 second timeout and `maxPending: 3`, and the topic and token come from environment variables. Scripts and agents can fetch secrets with a plain `curl`, with no key stored on the caller. Denied requests get a 403 and unanswered ones a 408.
 
 ## Options
 
