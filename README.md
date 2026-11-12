@@ -112,6 +112,16 @@ Then call it like any other endpoint, and approve on your phone:
 curl -s https://api.example.com/token
 ```
 
+## Example: a Vault application
+
+[abbievault.vercel.app](https://abbievault.vercel.app) uses the gate in front of a vault. The routes that return stored secrets are guarded, so opening an entry sends an ntfy notification and the response waits until you tap Approve on your phone. There are no vault passwords to type, and a request that you did not make never gets past the gate.
+
+```js
+app.get("/vault/:id", gate.middleware, (req, res) => {
+  res.json(readSecret(req.params.id));
+});
+```
+
 ## Options
 
 | option | default | description |
